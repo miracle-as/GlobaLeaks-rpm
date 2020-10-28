@@ -19,10 +19,9 @@ Source0:        https://github.com/globaleaks/GlobaLeaks/archive/%{commit}.tar.g
 BuildRequires: nodejs
 BuildRequires: python36
 
-%prep
-%setup -q -n globaleaks-%{version}
-
 %build
+%setup -n globaleaks-%{version}
+
 # Build Client
 cd client
 npm install -d
