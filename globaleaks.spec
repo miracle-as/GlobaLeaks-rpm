@@ -51,6 +51,8 @@ sed -i "s|^APPARMOR_SANDBOXING.*|APPARMOR_SANDBOXING=0|" backend/default
 sed -i 's|http://%s|http://%s:8080|g' $RPM_BUILD_ROOT/usr/lib/python3.6/site-packages/globaleaks/backend.py
 sed -i 's|https://%s|https://%s:4443|g' $RPM_BUILD_ROOT/usr/lib/python3.6/site-packages/globaleaks/backend.py
 sed -i 's|80, 443|8080, 4443|g' $RPM_BUILD_ROOT/usr/lib/python3.6/site-packages/globaleaks/settings.py
+sed -i 's|port == 80|port == 8080|g' $RPM_BUILD_ROOT/usr/lib/python3.6/site-packages/globaleaks/backend.py
+sed -i 's|port == 443|port == 4443|g' $RPM_BUILD_ROOT/usr/lib/python3.6/site-packages/globaleaks/backend.py
 
 # Install Rest
 mkdir -p $RPM_BUILD_ROOT/usr/lib/systemd/system
