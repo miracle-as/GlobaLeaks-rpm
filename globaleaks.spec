@@ -20,7 +20,10 @@ BuildRequires: nodejs
 BuildRequires: python36
 
 %prep
+
 %setup -n globaleaks-%{version}
+
+%build
 
 # Build Client
 cd client
