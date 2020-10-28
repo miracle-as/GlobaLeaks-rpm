@@ -20,5 +20,5 @@ script:
 
 after_success:
   - pip install copr-cli simplejson
-  - openssl aes-256-cbc -K $encrypted_916af48005ab_key -iv $encrypted_916af48005ab_iv -in .copr.enc -out copr-config -d
+  - openssl aes-256-cbc -K $encrypted_916af48005ab_key -iv $encrypted_916af48005ab_iv -in .copr.enc -out .copr -di
   - copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY} *.src.rpm
