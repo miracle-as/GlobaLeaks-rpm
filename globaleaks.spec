@@ -19,7 +19,7 @@ Source0:        https://github.com/globaleaks/GlobaLeaks/archive/%{commit}.tar.g
 BuildRequires: nodejs
 BuildRequires: python36
 
-%build
+%prep
 %setup -n globaleaks-%{version}
 
 # Build Client
