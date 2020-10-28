@@ -15,6 +15,7 @@ ExclusiveArch: x86_64
 
 URL:            https://globaleaks.org
 Source0:        https://github.com/globaleaks/GlobaLeaks/archive/%{commit}.tar.gz
+Source1:	globaleaks.service
 
 BuildRequires: nodejs
 BuildRequires: python36
@@ -27,7 +28,7 @@ BuildRequires: python36
 # Build Client
 cd client
 npm install -d
-./node_modules/grunt/bin/grunt copy:sources
+./node_modules/grunt/bin/grunt build
 cd ../
 
 # Build Backend
@@ -42,12 +43,24 @@ cd backend
 python3 setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
 cd ../
 
+# Configure
+sed -i "s|^WORKING_DIR.*|WORKING_DIR=/var/lib/globaleaks/|" backend/default
+sed -i "s|^APPARMOR_SANDBOXING.*|APPARMOR_SANDBOXING=0|" backend/default
+
+# Change ports to unprivileges ports
+sed -i 's|http://%s|http://%s:8080|g' $RPM_BUILD_ROOT/usr/lib/python3.6/site-packages/globaleaks/backend.py
+sed -i 's|https://%s|https://%s:4443|g' $RPM_BUILD_ROOT/usr/lib/python3.6/site-packages/globaleaks/backend.py
+sed -i 's|80, 443|8080, 4443|g' $RPM_BUILD_ROOT/usr/lib/python3.6/site-packages/globaleaks/settings.py
+
 # Install Rest
+mkdir -p $RPM_BUILD_ROOT/usr/lib/systemd/system
+cp %{_sourcedir}/globaleaks.service $RPM_BUILD_ROOT/usr/lib/systemd/system/
 mkdir -p $RPM_BUILD_ROOT/usr/share/globaleaks/client
 cp LICENSE $RPM_BUILD_ROOT/usr/share/globaleaks/LICENSE
 cp CHANGELOG $RPM_BUILD_ROOT/usr/share/globaleaks/CHANGELOG
 cp backend/default $RPM_BUILD_ROOT/usr/share/globaleaks/default
-cp client/build/* $RPM_BUILD_ROOT/usr/share/globaleaks/client
+cp -ar client/build/* $RPM_BUILD_ROOT/usr/share/globaleaks/client
+mkdir -p $RPM_BUILD_ROOT/var/lib/globaleaks
 
 %pre
 #!/bin/sh
@@ -76,18 +89,6 @@ fi
 # This is the post installation script for globaleaks
 set -e
 
-DISTRO="unknown"
-DISTRO_CODENAME="unknown"
-if which lsb_release >/dev/null; then
-  DISTRO="$(lsb_release -is)"
-  DISTRO_CODENAME="$(lsb_release -cs)"
-fi
-
-if [ "$DISTRO" = "LinuxMint" ]; then
-  DISTRO="Ubuntu"
-  DISTRO_CODENAME=`grep UBUNTU_CODENAME /etc/os-release | sed -e 's/UBUNTU_CODENAME=//'`
-fi
-
 # Create globaleaks user and add the user to required groups
 if ! id -u globaleaks >/dev/null 2>&1; then
   adduser --quiet \
@@ -105,6 +106,7 @@ gl-fix-permissions
 # Remove old configuration of Tor used before txtorcon adoption
 if $(grep -q -i globaleaks /etc/tor/torrc >/dev/null 2>&1); then
   sed -i '/BEGIN GlobaLeaks/,/END GlobaLeaks/d' /etc/tor/torrc
+  systemctl enable tor
   systemctl restart tor
 fi
 
@@ -113,7 +115,11 @@ fi
 #   - https://github.icom/globaleaks/GlobaLeaks/issues/1722
 cp /usr/lib/systemd/system/haveged.service /etc/systemd/system/haveged.service
 sed -i 's/-w 1024/-w 4067/g' /etc/systemd/system/haveged.service
+systemctl enable tor
 systemctl restart haveged
+
+systemctl enable globaleaks
+systemctl restart globaleaks
 
 %preun
 #!/bin/sh
@@ -126,10 +132,11 @@ GlobaLeaks is an open source project aimed to create a worldwide, anonymous,
 censorship-resistant, distributed whistleblowing platform.
 
 %files
+%defattr(0644, globaleaks, globaleaks, 0755)
 /usr/bin/gl-admin
 /usr/bin/gl-fix-permissions
 /usr/bin/globaleaks
-/usr/lib/python3.6/dist-packages/globaleaks/
-/usr/lib/python3.6/dist-packages/globaleaks-4.0.58.egg-info/
-/usr/share/doc/globaleaks/
+/usr/lib/python3.6/site-packages/globaleaks/
+/usr/lib/python3.6/site-packages/globaleaks-4.0.58-py3.6.egg-info/
 /usr/share/globaleaks/
+%attr(0755, globaleaks, globaleaks) /var/lib/globaleaks
