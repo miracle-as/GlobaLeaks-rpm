@@ -20,8 +20,7 @@ BuildRequires: nodejs
 BuildRequires: python36
 
 %prep
-
-%setup -n globaleaks-%{version}
+%setup -n GlobaLeaks-%{commit}
 
 %build
 
