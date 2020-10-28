@@ -1,12 +1,12 @@
 %global commit      5762d913f9b80a4f30d41cc0ee9b1ee41242b500
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-
+%global version     4.0.58
 
 %define debug_package %{nil}
 %define _unpackaged_files_terminate_build 0
 
 Name: globaleaks
-Version: 4.0.58
+Version: %{version}
 Release: 1.%{shortcommit}%{?dist}
 Summary: Opensource whistleblowing platform.
 License: see /usr/share/doc/globaleaks/copyright
@@ -20,7 +20,7 @@ BuildRequires: nodejs
 BuildRequires: python36
 
 %prep
-%setup -q
+%setup -q -n globaleaks-%{version}
 
 %build
 # Build Client
