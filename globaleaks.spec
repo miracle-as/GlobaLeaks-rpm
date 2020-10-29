@@ -19,6 +19,15 @@ Source1:	globaleaks.service
 
 BuildRequires: nodejs
 BuildRequires: python36
+Requires: python3-twisted
+Requires: python3-priority
+Requires: python3-h2
+Requires: python3-sqlalchemy
+Requires: python3-pynacl
+Requires: python3-gnupg
+Requires: python3-josepy
+Requires: python3-acme
+
 
 %prep
 %setup -n GlobaLeaks-%{commit}
@@ -141,4 +150,5 @@ censorship-resistant, distributed whistleblowing platform.
 /usr/lib/python3.6/site-packages/globaleaks/
 /usr/lib/python3.6/site-packages/globaleaks-4.0.58-py3.6.egg-info/
 /usr/share/globaleaks/
+/usr/lib/systemd/system/globaleaks.service
 %attr(0755, globaleaks, globaleaks) /var/lib/globaleaks
